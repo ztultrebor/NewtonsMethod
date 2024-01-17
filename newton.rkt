@@ -40,7 +40,7 @@
             ; stopping once f(root) is sufficiently close to 0,
             ; or if it has too much trouble finding a zero
             (cond
-              [(> i 128) #f]
+              [(> i 32) #f]
               [else (local (
                             (define f@root (f root)))
                       (if (< (abs f@root) tol) root
@@ -53,11 +53,9 @@
   ; [ListOf N] -> [ListOf Number]
   ; A best attempt to return all the roots of a given polynomial
   (local (
-          (define range 6)
-          (define raw-range
-            (build-list (+ (* 2 range) 1) (lambda (n) (expt 2 (- n range)))))
+          (define range 64)
           (define starting-points
-            (append (map (λ (r) (- r)) raw-range) raw-range))
+            (build-list (+ (* 2 range) 1) (lambda (n) (/ (- n range) 2))))
           (define raw-results (map (λ (g) (newton coeffs g)) starting-points))
           (define approx-solutions
             (filter (λ (r) (not (false? r))) raw-results))
@@ -86,5 +84,6 @@
 ;(define coefficients (list 67 -98 2 -38 46 0 42 2)) ; hard case here
 ;(define coefficients (list -24 -5 -88 34 86 -59 -1 -24)) ; another one
 ;(define coefficients (list -27 1 84 86 -38 -94 -9 -84)) ; again
+;(define coefficients (list -34 -97 94 53 16 81 -71 13)) ; ibid
 coefficients
 (find-all-zeros coefficients)

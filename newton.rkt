@@ -32,16 +32,19 @@
   (local (
           (define tol 1e-6)
           (define f (make-func coefficients))
-          (define df (make-func (derivative coefficients)))          
+          (define df (make-func (derivative coefficients)))
           (define (method root i)
             ; Number N -> [Maybe Number]
-            ; using a recursive approach, homes in on the nearest root
-            ; using Newton's Method, stopping once f(root) is
-            ; sufficiently close to 0
+            ; using a recursive approach,
+            ; homes in on the nearest root using Newton's Method,
+            ; stopping once f(root) is sufficiently close to 0,
+            ; or if it has too much trouble finding a zero
             (cond
               [(> i 128) #f]
-              [(< (abs (f root)) tol) (inexact->exact root)]
-              [else (method (- root (/ (f root) (df root))) (add1 i))])))
+              [else (local (
+                            (define f@root (f root)))
+                      (if (< (abs f@root) tol) root
+                          (method (- root (/ f@root (df root))) (add1 i))))])))
     ; - IN -
     (method guess 0)))
      
@@ -50,7 +53,7 @@
   ; [ListOf N] -> [ListOf Number]
   ; A best attempt to return all the roots of a given polynomial
   (local (
-          (define range 5)
+          (define range 6)
           (define raw-range
             (build-list (+ (* 2 range) 1) (lambda (n) (expt 2 (- n range)))))
           (define starting-points
@@ -59,7 +62,8 @@
           (define approx-solutions
             (filter (λ (r) (not (false? r))) raw-results))
           (define solutions
-            (map (λ (s) (/ (round (* 1e6 s)) 1e6)) approx-solutions)))
+            (map (λ (s) (/ (round (* 1e6 (inexact->exact s))) 1e6))
+                 approx-solutions)))
     ; - IN -
     (sort (settle solutions) <)))
 
